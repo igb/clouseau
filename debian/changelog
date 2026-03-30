@@ -1,3 +1,9 @@
+clouseau (0.2.5-1) unstable; urgency=low
+
+  * updating clouseau to run on multiple instances
+
+ -- Ian Brown <igb@hccp.org>  Mon, 30 Mar 2026 23:36:29 +0000
+
 clouseau (0.2.4-1) unstable; urgency=low
 
   * trying to auto-update the debian chaglog with git commit info
