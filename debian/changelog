@@ -1,3 +1,9 @@
+clouseau (0.2.2-1) unstable; urgency=low
+
+  * Automated build from f107b20dccfa4d87dace71a9bdcb623aa470c9ea
+
+ -- Ian Brown <igb@hccp.org>  Mon, 30 Mar 2026 20:10:04 +0000
+
 clouseau (0.2.1-1) unstable; urgency=low
 
   * Automated build from e31d1b15925c8455229450c6351b4f1d50a6f93b
