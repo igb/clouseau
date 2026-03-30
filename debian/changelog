@@ -1,3 +1,9 @@
+clouseau (0.2.4-1) unstable; urgency=low
+
+  * trying to auto-update the debian chaglog with git commit info
+
+ -- Ian Brown <igb@hccp.org>  Mon, 30 Mar 2026 20:17:33 +0000
+
 clouseau (0.2.3-1) unstable; urgency=low
 
   * Automated build from 4ab1ef9a78cac3490c12efcad8395794296d0131
