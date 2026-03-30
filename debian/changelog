@@ -1,3 +1,14 @@
+clouseau (0.2.0-1) unstable; urgency=low
+
+  * Daemon mode: watch loop detects Claude start/stop, logs per-session
+  * Per-session timestamped log directories
+  * Add tcplife tracing for connection duration and bytes transferred
+  * Add -v flag for explicit verbose mode; auto-detect tty
+  * Drop syscount tracing due to overhead
+  * Remove sudo when running as root (systemd service support)
+
+ -- Ian Brown <igb@hccp.org>  Sun, 29 Mar 2026 17:30:00 +0000
+
 clouseau (0.1.0-1) unstable; urgency=low
 
   * Initial release.
