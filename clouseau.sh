@@ -47,6 +47,9 @@ if [ "$EUID" -eq 0 ]; then SUDO=""; else SUDO="sudo"; fi
 
 trap '$SUDO kill $(jobs -p) 2>/dev/null; exit' INT TERM
 
+# Track which PIDs are already being monitored
+declare -A TRACKED
+
 run_session() {
     local pid=$1
     local ts
@@ -78,14 +81,17 @@ run_session() {
     log "[$(date)] Claude (PID $pid) exited — stopping tracers"
     $SUDO kill "$open_pid" "$tcp_pid" "$tcplife_pid" "$exec_pid" 2>/dev/null
     wait "$open_pid" "$tcp_pid" "$tcplife_pid" "$exec_pid" 2>/dev/null
+    unset TRACKED[$pid]
 }
 
 log "[$(date)] Clouseau daemon started (log dir: $LOG_DIR)"
 
 while true; do
-    CLAUDE_PID=$(pgrep -f "claude" | head -1)
-    if [ -n "$CLAUDE_PID" ]; then
-        run_session "$CLAUDE_PID"
-    fi
+    while IFS= read -r pid; do
+        if [ -n "$pid" ] && [ -z "${TRACKED[$pid]:-}" ]; then
+            TRACKED[$pid]=1
+            run_session "$pid" &
+        fi
+    done < <(pgrep -f "claude")
     sleep "$POLL_INTERVAL"
 done
