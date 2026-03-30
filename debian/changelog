@@ -1,3 +1,9 @@
+clouseau (0.2.1-1) unstable; urgency=low
+
+  * Automated build from e31d1b15925c8455229450c6351b4f1d50a6f93b
+
+ -- Ian Brown <igb@hccp.org>  Mon, 30 Mar 2026 20:03:31 +0000
+
 clouseau (0.2.0-1) unstable; urgency=low
 
   * Daemon mode: watch loop detects Claude start/stop, logs per-session
