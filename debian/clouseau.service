@@ -1,0 +1,15 @@
+[Unit]
+Description=Clouseau - Claude process monitor
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/clouseau
+ExecStart=/usr/bin/clouseau
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

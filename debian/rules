@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_install:
+	install -D -m 755 clouseau.sh debian/clouseau/usr/bin/clouseau
+	install -D -m 644 debian/clouseau.default debian/clouseau/etc/default/clouseau

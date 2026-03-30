@@ -1,0 +1,15 @@
+Source: clouseau
+Section: utils
+Priority: optional
+Maintainer: ibrown <ibrown@localhost>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.0
+
+Package: clouseau
+Architecture: all
+Depends: ${misc:Depends}, bpfcc-tools, procps
+Description: Claude process monitor
+ Continuously monitors Claude AI CLI processes using eBPF tracing.
+ Tracks file access (opensnoop), network connections (tcpconnect),
+ and subprocess execution (execsnoop). Logs each Claude session to
+ a timestamped directory under LOG_DIR.
