@@ -1,6 +1,6 @@
 # clouseau
 
-A monitor for Claude: what files is it accessing, what network connections is it making, and what processes it is spawning.
+A monitor for Claude CLI: what files is it accessing, what network connections is it making, and what processes it is spawning.
 
 Uses Linux eBPF tracing tools to attach to Claude CLI processes and log activity per session.
 
