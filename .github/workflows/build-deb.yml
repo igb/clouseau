@@ -2,16 +2,65 @@ name: Build Debian Package
 
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore: bump version')"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install build dependencies
         run: sudo apt-get install -y build-essential debhelper
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            # Use tag as version
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            # Auto-increment patch from latest changelog entry
+            CURRENT=$(dpkg-parsechangelog --show-field Version)
+            BASE="${CURRENT%-*}"         # strip debian revision (e.g. 0.2.0-1 -> 0.2.0)
+            REVISION="${CURRENT##*-}"    # debian revision (e.g. 1)
+            MAJOR="${BASE%%.*}"
+            REST="${BASE#*.}"
+            MINOR="${REST%%.*}"
+            PATCH="${REST##*.}"
+            PATCH=$((PATCH + 1))
+            VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "deb_version=${VERSION}-1" >> "$GITHUB_OUTPUT"
+
+      - name: Update changelog
+        env:
+          DEBEMAIL: igb@hccp.org
+          DEBFULLNAME: Ian Brown
+        run: |
+          VERSION="${{ steps.version.outputs.deb_version }}"
+          DATE=$(date -R)
+          TMPFILE=$(mktemp)
+          cat > "$TMPFILE" <<EOF
+          clouseau (${VERSION}) unstable; urgency=low
+
+            * Automated build from ${{ github.sha }}
+
+           -- Ian Brown <igb@hccp.org>  ${DATE}
+
+          EOF
+          cat debian/changelog >> "$TMPFILE"
+          mv "$TMPFILE" debian/changelog
 
       - name: Build package
         run: dpkg-buildpackage -us -uc -b
@@ -19,8 +68,26 @@ jobs:
       - name: Collect artifact
         run: mv ../clouseau_*.deb .
 
-      - name: Upload .deb
+      - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
           name: clouseau-deb
           path: "*.deb"
+
+      - name: Commit changelog (main push only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add debian/changelog
+          git commit -m "chore: bump version to ${{ steps.version.outputs.deb_version }}"
+          git push
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "v${{ steps.version.outputs.version }}"
+          files: "*.deb"
+          generate_release_notes: true
