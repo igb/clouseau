@@ -44,21 +44,26 @@ jobs:
           echo "deb_version=${VERSION}-1" >> "$GITHUB_OUTPUT"
 
       - name: Update changelog
-        env:
-          DEBEMAIL: igb@hccp.org
-          DEBFULLNAME: Ian Brown
         run: |
           VERSION="${{ steps.version.outputs.deb_version }}"
           DATE=$(date -R)
+
+          # Find the last release tag to scope the commit range
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"  * %s" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"  * %s" --no-merges)
+          fi
+
+          # Fall back if there are no commits (e.g. tag build on same commit)
+          if [ -z "$COMMITS" ]; then
+            COMMITS="  * Build from ${{ github.sha }}"
+          fi
+
           TMPFILE=$(mktemp)
-          cat > "$TMPFILE" <<EOF
-          clouseau (${VERSION}) unstable; urgency=low
-
-            * Automated build from ${{ github.sha }}
-
-           -- Ian Brown <igb@hccp.org>  ${DATE}
-
-          EOF
+          printf 'clouseau (%s) unstable; urgency=low\n\n%s\n\n -- Ian Brown <igb@hccp.org>  %s\n\n' \
+            "$VERSION" "$COMMITS" "$DATE" > "$TMPFILE"
           cat debian/changelog >> "$TMPFILE"
           mv "$TMPFILE" debian/changelog
 
