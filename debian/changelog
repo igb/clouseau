@@ -1,3 +1,9 @@
+clouseau (0.2.6-1) unstable; urgency=low
+
+  * fix: prevent runaway eBPF tracer spawning that caused OOM
+
+ -- Ian Brown <igb@hccp.org>  Fri, 10 Apr 2026 07:04:50 +0000
+
 clouseau (0.2.5-1) unstable; urgency=low
 
   * updating clouseau to run on multiple instances
