@@ -50,6 +50,10 @@ trap '$SUDO kill $(jobs -p) 2>/dev/null; exit' INT TERM
 # Track which PIDs are already being monitored
 declare -A TRACKED
 
+# Pattern for the real Claude CLI binary; stored in a variable so that
+# pgrep's own command line does not contain the literal path.
+CLAUDE_PATTERN='.local/share/claude/versions/'
+
 run_session() {
     local pid=$1
     local ts
@@ -89,9 +93,12 @@ log "[$(date)] Clouseau daemon started (log dir: $LOG_DIR)"
 while true; do
     while IFS= read -r pid; do
         if [ -n "$pid" ] && [ -z "${TRACKED[$pid]:-}" ]; then
+            # Verify this is actually a Claude binary, not a transient shell
+            exe=$(readlink "/proc/$pid/exe" 2>/dev/null || true)
+            [[ "$exe" == *"$CLAUDE_PATTERN"* ]] || continue
             TRACKED[$pid]=1
             run_session "$pid" &
         fi
-    done < <(pgrep -f "claude")
+    done < <(pgrep -f "$CLAUDE_PATTERN")
     sleep "$POLL_INTERVAL"
 done
